@@ -124,7 +124,6 @@ def foldfile(filename, simdataPath, foldpath, dm, period):
 #----------------------------------------------
 if __name__ == "__main__":
 
-
     #----------------------------------------------
     #set parameters
     #DM range: 10 - 3000 cm-3/pc
@@ -161,18 +160,65 @@ if __name__ == "__main__":
     detection = 0
     taskid = 11
     count = 0
+    #global Flux
+    minimumFlux = 0.00001
+    maximumFlux = 1
 
     for dm in logDM:
         for period in logPeriod:
-            Flux = 2
-            print fastFile[count]
-            psrfitsName =  simulate(10**dm, Flux, 10**period, fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
-            print psrfitsName
-            #fold file
-            pfdfile = foldfile(psrfitsName, simdataPath, foldpath, dm, period):
-            #AI select
-            AItext =  confirmCandidate(pfdFile)                    
-            if 
+            maxFlux = 
+            minFlux = 
+            meanFlux = (maxFlux+minFlux)/2.
+            while maxFlux/minFlux > 5:
+                print fastFile[count]
+                psrfitsName_max  =  simulate(10**dm, maxFlux, 10**period, fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
+                psrfitsName_min  =  simulate(10**dm, minFlux, 10**period, fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
+                psrfitsName_mean =  simulate(10**dm, meanFlux, 10**period, fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
+
+                #fold file
+                pfdfile_max  = foldfile(psrfitsName_max , simdataPath, foldpath, dm, period):
+                pfdfile_min  = foldfile(psrfitsName_min , simdataPath, foldpath, dm, period):
+                pfdfile_mean = foldfile(psrfitsName_mean, simdataPath, foldpath, dm, period):
+                
+                #AI select
+                maxFluxSource = confirmCandidate(pfdFile_max)
+                minFluxSource = confirmCandidate(pfdFile_min)
+                meanFluxSource = confirmCandidate(pfdFile_mean)
+
+                #minFluxSource > detectSource
+                if minFluxSource > detectSource :
+                    maxFlux = minFlux
+                    minFlux = minimumFlux
+                    meanFlux = (maxFlux+minFlux)/2.
+
+                #minFluxSource < detectSource
+                else: 
+                    #meanFluxSource > detectSource
+                    if meanFluxSource > detectSource:
+                        maxFlux = meanFlux
+                        meanFlux = (maxFlux+minFlux)/2.
+                    #meanFluxSource < detectSource
+                    else: 
+                        #maxFluxSource > detectSource
+                        if maxFluxSource > detectSource:
+                            minFlux = meanFlux
+                            meanFlux = (maxFlux+minFlux)/2.
+                        #maxFluxSource < detectSource
+                        else:
+                            maxFlux = maximumFlux
+                            minFlux = maxFlux
+                            meanFlux = (maxFlux+minFlux)/2.
+                        
+                #----------------------------------------------
+                conn = sqlite3.connect('simPipe.db')
+                writedatabase(conn, psrparamName, DM, Period, width, maxFlux, maxFluxSource>detectSource, taskid)
+                writedatabase(conn, psrparamName, DM, Period, width, minFlux, minFluxSource>detectSource, taskid)
+                writedatabase(conn, psrparamName, DM, Period, width, meanFlux, meanFluxSource>detectSource, taskid)
+                cursor = conn.execute("SELECT * from simFiles")
+                for row in cursor:
+                    print row
+                conn.close()
+            #----------------------------------------------
             count += 1
 
             
