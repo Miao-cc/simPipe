@@ -26,7 +26,7 @@ else:
             period str,
             width str,
             flux str,
-            detection int,
+            detection str,
             taskid int)'''
     cursor.execute(sql)
     conn.commit()
