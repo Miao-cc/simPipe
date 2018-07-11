@@ -89,6 +89,7 @@ def setworkpath(simpath):
 def foldfile(filename, simdataPath, foldpath, dm, period):
     cutfilename = filename[:-5]+'_cut'+filename[-5:]
     #cut file 
+    #----------------------------------------------
     if dm <1000:
         cutfile = str('python ~/psrsoft/OPTIMUS/python/fitsio_cutfreq.py %s/%s %s %s %s/%s' %(simdataPath, filename, 300, 800, foldpath, cutfilename))
         print cutfile
@@ -128,9 +129,10 @@ if __name__ == "__main__":
     #set parameters
     #DM range: 10 - 3000 cm-3/pc
     #Period range: 0.001 - 10 sec
-    #Flux range: 0.1 -0.0001 Jy
+    #Flux range: 1 -0.0001 Jy
+    #----------------------------------------------
     #db file: simPipe.db
-    maxDM = 3000; minDM = 10; maxPeriod = 10; minPeriod = 0.001; maxFlux = 0.1; minFlux = 0.0001
+    maxDM = 3000; minDM = 10; maxPeriod = 10; minPeriod = 0.001; maximumFlux = 1; minimumFlux = 0.0001
     logDM = np.random.uniform(np.log10(minDM), np.log10(maxDM), 2) 
     logPeriod =  np.random.uniform(np.log10(minPeriod), np.log10(maxPeriod), 2)
     
@@ -160,14 +162,11 @@ if __name__ == "__main__":
     detection = 0
     taskid = 11
     count = 0
-    #global Flux
-    minimumFlux = 0.00001
-    maximumFlux = 1
 
     for dm in logDM:
         for period in logPeriod:
-            maxFlux = 
-            minFlux = 
+            maxFlux = maximumFlux
+            minFlux = minimumFlux
             meanFlux = (maxFlux+minFlux)/2.
             while maxFlux/minFlux > 5:
                 print fastFile[count]
@@ -176,18 +175,35 @@ if __name__ == "__main__":
                 psrfitsName_min  =  simulate(10**dm, minFlux, 10**period, fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
                 psrfitsName_mean =  simulate(10**dm, meanFlux, 10**period, fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
 
+
                 #fold file
                 pfdfile_max  = foldfile(psrfitsName_max , simdataPath, foldpath, dm, period):
                 pfdfile_min  = foldfile(psrfitsName_min , simdataPath, foldpath, dm, period):
                 pfdfile_mean = foldfile(psrfitsName_mean, simdataPath, foldpath, dm, period):
-     scores           
+
                 #AI select
                 maxFluxScore = confirmCandidate(pfdFile_max)
                 minFluxScore = confirmCandidate(pfdFile_min)
                 meanFluxScore = confirmCandidate(pfdFile_mean)
 
+
                 #check source order
-                minFluxScore < meanFluxScore < maxFluxScore:
+                if (minFluxScore < meanFluxScore & meanFluxScore < maxFluxScore):
+                    #record the result to the database
+                    #----------------------------------------------
+                    conn = sqlite3.connect('simPipe.db')
+                    writedatabase(conn, psrfitsName_max, DM, Period, width, maxFlux, maxFluxScore>detectScore, taskid)
+                    writedatabase(conn, psrfitsName_min, DM, Period, width, minFlux, minFluxScore>detectScore, taskid)
+                    writedatabase(conn, psrfitsName_mean, DM, Period, width, meanFlux, meanFluxScore>detectScore, taskid)
+                    cursor = conn.execute("SELECT * from simFiles")
+                    for row in cursor:
+                        print row
+                    conn.close()
+                elif (minFluxScore > meanFluxScore):
+                    break
+                else (meanFluxScore > maxFluxScore):
+                    break 
+
 
                 #minFluxScore > detectScore
                 if minFluxScore > detectScore :
@@ -213,15 +229,6 @@ if __name__ == "__main__":
                             minFlux = maxFlux
                             meanFlux = (maxFlux+minFlux)/2.
                         
-                #----------------------------------------------
-                conn = sqlite3.connect('simPipe.db')
-                writedatabase(conn, psrparamName, DM, Period, width, maxFlux, maxFluxScore>detectScore, taskid)
-                writedatabase(conn, psrparamName, DM, Period, width, minFlux, minFluxScore>detectScore, taskid)
-                writedatabase(conn, psrparamName, DM, Period, width, meanFlux, meanFluxScore>detectScore, taskid)
-                cursor = conn.execute("SELECT * from simFiles")
-                for row in cursor:
-                    print row
-                conn.close()
             #----------------------------------------------
             count += 1
 
