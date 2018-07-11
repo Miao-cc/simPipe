@@ -171,6 +171,7 @@ if __name__ == "__main__":
             meanFlux = (maxFlux+minFlux)/2.
             while maxFlux/minFlux > 5:
                 print fastFile[count]
+                #get filename
                 psrfitsName_max  =  simulate(10**dm, maxFlux, 10**period, fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
                 psrfitsName_min  =  simulate(10**dm, minFlux, 10**period, fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
                 psrfitsName_mean =  simulate(10**dm, meanFlux, 10**period, fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
@@ -179,31 +180,34 @@ if __name__ == "__main__":
                 pfdfile_max  = foldfile(psrfitsName_max , simdataPath, foldpath, dm, period):
                 pfdfile_min  = foldfile(psrfitsName_min , simdataPath, foldpath, dm, period):
                 pfdfile_mean = foldfile(psrfitsName_mean, simdataPath, foldpath, dm, period):
-                
+     scores           
                 #AI select
-                maxFluxSource = confirmCandidate(pfdFile_max)
-                minFluxSource = confirmCandidate(pfdFile_min)
-                meanFluxSource = confirmCandidate(pfdFile_mean)
+                maxFluxScore = confirmCandidate(pfdFile_max)
+                minFluxScore = confirmCandidate(pfdFile_min)
+                meanFluxScore = confirmCandidate(pfdFile_mean)
 
-                #minFluxSource > detectSource
-                if minFluxSource > detectSource :
+                #check source order
+                minFluxScore < meanFluxScore < maxFluxScore:
+
+                #minFluxScore > detectScore
+                if minFluxScore > detectScore :
                     maxFlux = minFlux
                     minFlux = minimumFlux
-                    meanFlux = (maxFlux+minFlux)/2.
+                    meanFlux = maxFlux+minFlux)/2.
 
-                #minFluxSource < detectSource
+                #minFluxScore < detectScore
                 else: 
-                    #meanFluxSource > detectSource
-                    if meanFluxSource > detectSource:
+                    #meanFluxScore > detectScore
+                    if meanFluxScore > detectScore:
                         maxFlux = meanFlux
                         meanFlux = (maxFlux+minFlux)/2.
-                    #meanFluxSource < detectSource
+                    #meanFluxScore < detectScore
                     else: 
-                        #maxFluxSource > detectSource
-                        if maxFluxSource > detectSource:
+                        #maxFluxScore > detectScore
+                        if maxFluxScore > detectScore:
                             minFlux = meanFlux
                             meanFlux = (maxFlux+minFlux)/2.
-                        #maxFluxSource < detectSource
+                        #maxFluxScore < detectScore
                         else:
                             maxFlux = maximumFlux
                             minFlux = maxFlux
@@ -211,9 +215,9 @@ if __name__ == "__main__":
                         
                 #----------------------------------------------
                 conn = sqlite3.connect('simPipe.db')
-                writedatabase(conn, psrparamName, DM, Period, width, maxFlux, maxFluxSource>detectSource, taskid)
-                writedatabase(conn, psrparamName, DM, Period, width, minFlux, minFluxSource>detectSource, taskid)
-                writedatabase(conn, psrparamName, DM, Period, width, meanFlux, meanFluxSource>detectSource, taskid)
+                writedatabase(conn, psrparamName, DM, Period, width, maxFlux, maxFluxScore>detectScore, taskid)
+                writedatabase(conn, psrparamName, DM, Period, width, minFlux, minFluxScore>detectScore, taskid)
+                writedatabase(conn, psrparamName, DM, Period, width, meanFlux, meanFluxScore>detectScore, taskid)
                 cursor = conn.execute("SELECT * from simFiles")
                 for row in cursor:
                     print row
