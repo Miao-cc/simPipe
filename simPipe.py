@@ -90,15 +90,20 @@ def foldfile(filename, simdataPath, foldpath, dm, period):
     cutfilename = filename[:-5]+'_cut'+filename[-5:]
     #cut file 
     #----------------------------------------------
-    if dm <1000:
-        cutfile = str('python ~/psrsoft/OPTIMUS/python/fitsio_cutfreq.py %s/%s %s %s %s/%s' %(simdataPath, filename, 300, 800, foldpath, cutfilename))
-        print cutfile
-        output = getoutput(cutfile)
-    elif dm <3000:
-        cutfile = str('python ~/psrsoft/OPTIMUS/python/fitsio_cutfreq.py %s/%s %s %s %s/%s' %(simdataPath, filename, 500, 800, foldpath, cutfilename))
+    if dm <500:
+        cutfile = str('python ~/psrsoft/OPTIMUS/python/fitsio_cutfreq.py %s/%s %s %s %s/%s' %(simdataPath, filename, 270, 270+256*2, foldpath, cutfilename))
         print cutfile
         output = getoutput(cutfile)
 
+    elif dm <1000:
+        cutfile = str('python ~/psrsoft/OPTIMUS/python/fitsio_cutfreq.py %s/%s %s %s %s/%s' %(simdataPath, filename, 416, 416+256, foldpath, cutfilename))
+        print cutfile
+        output = getoutput(cutfile)
+
+    else dm <3000:
+        cutfile = str('python ~/psrsoft/OPTIMUS/python/fitsio_cutfreq.py %s/%s %s %s %s/%s' %(simdataPath, filename, 500, 500+256, foldpath, cutfilename))
+        print cutfile
+        output = getoutput(cutfile)
     #rfifind
     maskfilename = filename[:-5]
     rfifind = str('rfifind %s/%s -o %s -time 1' %(foldpath, cutfilename, maskfilename))
@@ -162,6 +167,7 @@ if __name__ == "__main__":
     detection = 0
     taskid = 11
     count = 0
+    detectScore = 0.9
 
     for dm in logDM:
         for period in logPeriod:
@@ -196,9 +202,9 @@ if __name__ == "__main__":
                     writedatabase(conn, psrfitsName_min, DM, Period, width, minFlux, minFluxScore>detectScore, taskid)
                     writedatabase(conn, psrfitsName_mean, DM, Period, width, meanFlux, meanFluxScore>detectScore, taskid)
                     cursor = conn.execute("SELECT * from simFiles")
-                    for row in cursor:
-                        print row
-                    conn.close()
+                    #for row in cursor:
+                    #    print row
+                    #conn.close()
                 elif (minFluxScore > meanFluxScore):
                     break
                 else (meanFluxScore > maxFluxScore):
@@ -232,22 +238,4 @@ if __name__ == "__main__":
             #----------------------------------------------
             count += 1
 
-            
-    #
-    #
-    ##----------------------------------------------
-    ##record the test details
-    #recordFile = "simlog.log"
-    #f = open(recordFile,'a')
-    #f.writelines()
-    #f.close()
-    #
-    #
-    #----------------------------------------------
-    #record the result of test into the database
-    #conn = sqlite3.connect('simPipe.db')
-    #writedatabase(conn, psrparamName, DM, Period, width, Flux, detection, taskid)
-    #cursor = conn.execute("SELECT * from simFiles")
-    #for row in cursor:
-    #    print row
-    #conn.close()
+    print "*************************finish***********************************8"
