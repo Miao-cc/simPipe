@@ -100,7 +100,7 @@ def foldfile(filename, simdataPath, foldpath, dm, period):
         print cutfile
         output = getoutput(cutfile)
 
-    else dm <3000:
+    else :
         cutfile = str('python ~/psrsoft/OPTIMUS/python/fitsio_cutfreq.py %s/%s %s %s %s/%s' %(simdataPath, filename, 500, 500+256, foldpath, cutfilename))
         print cutfile
         output = getoutput(cutfile)
@@ -183,9 +183,9 @@ if __name__ == "__main__":
 
 
                 #fold file
-                pfdfile_max  = foldfile(psrfitsName_max , simdataPath, foldpath, dm, period):
-                pfdfile_min  = foldfile(psrfitsName_min , simdataPath, foldpath, dm, period):
-                pfdfile_mean = foldfile(psrfitsName_mean, simdataPath, foldpath, dm, period):
+                pfdFile_max  = foldfile(psrfitsName_max , simdataPath, foldResult, dm, period)
+                pfdFile_min  = foldfile(psrfitsName_min , simdataPath, foldResult, dm, period)
+                pfdFile_mean = foldfile(psrfitsName_mean, simdataPath, foldResult, dm, period)
 
                 #AI select
                 maxFluxScore = confirmCandidate(pfdFile_max)
@@ -198,24 +198,26 @@ if __name__ == "__main__":
                     #record the result to the database
                     #----------------------------------------------
                     conn = sqlite3.connect('simPipe.db')
-                    writedatabase(conn, psrfitsName_max, DM, Period, width, maxFlux, maxFluxScore>detectScore, taskid)
-                    writedatabase(conn, psrfitsName_min, DM, Period, width, minFlux, minFluxScore>detectScore, taskid)
-                    writedatabase(conn, psrfitsName_mean, DM, Period, width, meanFlux, meanFluxScore>detectScore, taskid)
-                    cursor = conn.execute("SELECT * from simFiles")
+                    writedatabase(conn, psrfitsName_max, DM, Period, width, maxFlux, maxFluxScore, taskid)
+                    writedatabase(conn, psrfitsName_min, DM, Period, width, minFlux, minFluxScore, taskid)
+                    writedatabase(conn, psrfitsName_mean, DM, Period, width, meanFlux, meanFluxScore, taskid)
+                    #cursor = conn.execute("SELECT * from simFiles")
                     #for row in cursor:
                     #    print row
-                    #conn.close()
+                    conn.close()
                 elif (minFluxScore > meanFluxScore):
-                    break
-                else (meanFluxScore > maxFluxScore):
-                    break 
+                    continue
+                elif (meanFluxScore > maxFluxScore):
+                    continue
+                else : 
+                    print "minFluxScore, meanFluxScore, maxFluxScore",minFluxScore, meanFluxScore, maxFluxScore
 
 
                 #minFluxScore > detectScore
                 if minFluxScore > detectScore :
                     maxFlux = minFlux
                     minFlux = minimumFlux
-                    meanFlux = maxFlux+minFlux)/2.
+                    meanFlux = (maxFlux+minFlux)/2.
 
                 #minFluxScore < detectScore
                 else: 
