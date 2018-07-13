@@ -123,10 +123,6 @@ def foldfile(filename, simdataPath, foldpath, dm, period):
 
 
 
-
-
-
-
 #----------------------------------------------
 if __name__ == "__main__":
 
@@ -165,9 +161,12 @@ if __name__ == "__main__":
     meanFreq = 500
     randomNum=np.random.uniform(-1,1,len(logDM)*len(logPeriod))
     detection = 0
-    taskid = 11
     count = 0
     detectScore = 0.9
+
+    #----------------------------------------------
+    # check taskin from database
+    taskid = 11
 
     for dm in logDM:
         for period in logPeriod:
@@ -240,4 +239,4 @@ if __name__ == "__main__":
             #----------------------------------------------
             count += 1
 
-    print "*************************finish***********************************8"
+    print "*************************finish***********************************"
