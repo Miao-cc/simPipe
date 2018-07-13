@@ -133,9 +133,11 @@ if __name__ == "__main__":
     #Flux range: 1 -0.0001 Jy
     #----------------------------------------------
     #db file: simPipe.db
+    np.set_printoptions(precision=5)
     maxDM = 3000; minDM = 10; maxPeriod = 10; minPeriod = 0.001; maximumFlux = 1; minimumFlux = 0.0001
     logDM = np.random.uniform(np.log10(minDM), np.log10(maxDM), 2) 
     logPeriod =  np.random.uniform(np.log10(minPeriod), np.log10(maxPeriod), 2)
+
     
     #----------------------------------------------
     #setworkpath
@@ -176,9 +178,9 @@ if __name__ == "__main__":
             while maxFlux/minFlux > 5:
                 print fastFile[count]
                 #get filename
-                psrfitsName_max  =  simulate(10**dm, maxFlux, 10**period, fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
-                psrfitsName_min  =  simulate(10**dm, minFlux, 10**period, fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
-                psrfitsName_mean =  simulate(10**dm, meanFlux, 10**period, fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
+                psrfitsName_max  =  simulate(round(10**dm,5), round(maxFlux,5), round(10**period,5), fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
+                psrfitsName_min  =  simulate(round(10**dm,5), round(minFlux,5), round(10**period,5), fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
+                psrfitsName_mean =  simulate(round(10**dm,5), round(meanFlux,5), round(10**period,5), fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
 
 
                 #fold file
