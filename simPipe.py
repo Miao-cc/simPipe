@@ -27,6 +27,7 @@ def writedatabase(database, name, dm, period, width, flux, detection, taskid):
 #func to simulate files
 def simulate(DM,Flux,Period, fastFileName, randomNum, fitsFilePath, simBinarydataPath, simdataPath):
     #set the and write the parameter files
+    os.chdir(simBinarydataPath)
     fastparamName = 'FAST.params'
     psrparamName = str('test_DM_%s_Flux_%s_P0_%s.params' %(DM, Flux, Period))
     psrdatName = str('test_DM_%s_Flux_%s_P0_%s.dat' %(DM, Flux, Period))
@@ -40,7 +41,7 @@ def simulate(DM,Flux,Period, fastFileName, randomNum, fitsFilePath, simBinarydat
     optimus.writeParamFile(psrparamName, optimus.pulsar(dm = str(DM), flux = str(Flux), period = str(Period), width = width))
     
     #simulate pulsar signal
-    SimulatePsrData = str('simulateSimplePsr_mcc -p FAST.params -p %s -o %s' %(psrparamName,psrdatName))
+    SimulatePsrData = str('simulateSimplePsr_mcc -p FAST.params -p %s -o %s' %(psrparamName, psrdatName))
     print SimulatePsrData
     output=getoutput(SimulatePsrData)
     
@@ -54,20 +55,21 @@ def simulate(DM,Flux,Period, fastFileName, randomNum, fitsFilePath, simBinarydat
 
 
 #----------------------------------------------
-#return the result of AI select
-def confirmCandidate(pfdFile):
-    AI_PATH = '/'.join(ubc_AI.__file__.split('/')[:-1])
-    #classifier = cPickle.load(open(AI_PATH+'/trained_AI/clfl2_HTRU.pkl','rb'))
-    #classifier = cPickle.load(open('../clfl2_PALFA_1.pkl','rb'))
-    classifier = cPickle.load(open(AI_PATH+'/trained_AI/clfl2_PALFA.pkl','rb'))
-    #classifier = cPickle.load(open(AI_PATH+'/trained_AI/clfl2_BD.pkl','rb'))
-    #classifier = cPickle.load(open(AI_PATH+'/trained_AI/clfl2_ResNet.pkl','rb'))
-    tmp = []; 
-    tmp.append(pfdFile) 
-    AI_scores = classifier.report_score([pfdreader(f) for f in tmp])
-    
-    text = '\n'.join(['%s %s' % (tmp[i], AI_scores[i]) for i in range(len(tmp))])
-    return text
+##return the result of AI select
+#def confirmCandidate(pfdFile):
+#    AI_PATH = '/'.join(ubc_AI.__file__.split('/')[:-1])
+#    #classifier = cPickle.load(open(AI_PATH+'/trained_AI/clfl2_HTRU.pkl','rb'))
+#    #classifier = cPickle.load(open('../clfl2_PALFA_1.pkl','rb'))
+#    classifier = cPickle.load(open(AI_PATH+'/trained_AI/clfl2_PALFA.pkl','rb'))
+#    #classifier = cPickle.load(open(AI_PATH+'/trained_AI/clfl2_BD.pkl','rb'))
+#    #classifier = cPickle.load(open(AI_PATH+'/trained_AI/clfl2_ResNet.pkl','rb'))
+#    tmp = []; 
+#    tmp.append(pfdFile) 
+#    AI_scores = classifier.report_score([pfdreader(f) for f in tmp])
+#    
+#    text = '\n'.join(['%s %s' % (tmp[i], AI_scores[i]) for i in range(len(tmp))])
+#    return text
+def def confirmCandidate(pfdFile):
 
 
 #----------------------------------------------
@@ -143,7 +145,7 @@ if __name__ == "__main__":
     #setworkpath
     simpath = os.getcwd()
     fastFile, fitsFilePath, simBinarydataPath, simdataPath, foldResult = setworkpath(simpath)
-    print foldResult
+    print "path now: ", simpath
 
     #----------------------------------------------
     #record random params

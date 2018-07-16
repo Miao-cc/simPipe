@@ -1,6 +1,0 @@
-./result_34.79ms_Cand.pfd 0.16496015085988316
-./result_32.00ms_Cand.pfd 0.4070502272374427
-./result_42.11ms_Cand.pfd 0.338956501050115
-./result_47.06ms_Cand.pfd 0.4041927976430404
-./result_72.74ms_Cand.pfd 0.9632965747095611
-./result_61.54ms_Cand.pfd 0.8151452327992411
