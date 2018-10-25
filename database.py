@@ -5,13 +5,16 @@ import sqlite3
 import os
 
 #operate database
+
+
+
 def writedatabase(database, name, dm, period, width, flux, detection, taskid):
     c = database.cursor()
-    name = "'"+name+"'"
-    sql = " insert into simFiles (name, dm, period, width, flux, detection, taskid) values (%s, %s, %s, %s, %s, %s, %s)" %(name, dm, period, width, flux, detection, taskid)
+    #name = "'"+name+"'"
+    sql = " insert into simFiles (name, dm, period, width, flux, detection, taskid) values ('%s', '%s', '%s', '%s', '%s', '%s', %s)" %(name, dm, period, width, flux, detection, taskid)
+    print sql
     c.execute(sql)
     database.commit()
-    database.close()
 
 # create database
 if os.access("simPipe.db", os.F_OK):

@@ -17,9 +17,11 @@ from ubc_AI.data import pfdreader
 #----------------------------------------------
 #operate database
 def writedatabase(database, name, dm, period, width, flux, detection, taskid):
-    name = "'"+name+"'"
-    sql = " insert into simFiles (name, dm, period, width, flux, detection, taskid) values (%s, %s, %s, %s, %s, %s, %s)" %(name, dm, period, width, flux, detection, taskid)
-    database.cursor().execute(sql)
+    c = database.cursor()
+    #name = "'"+name+"'"
+    sql = " insert into simFiles (name, dm, period, width, flux, detection, taskid) values ('%s', '%s', '%s', '%s', '%s', '%s', %s)" %(name, dm, period, width, flux, detection, taskid)
+    print sql
+    c.execute(sql)
     database.commit()
 
 
@@ -51,25 +53,32 @@ def simulate(DM,Flux,Period, fastFileName, randomNum, fitsFilePath, simBinarydat
     print SimulatePsrData
     output = getoutput(SimulatePsrData)
 
-    return psrfitsName
+    return psrfitsName, width
 
 
 #----------------------------------------------
 ##return the result of AI select
-#def confirmCandidate(pfdFile):
-#    AI_PATH = '/'.join(ubc_AI.__file__.split('/')[:-1])
-#    #classifier = cPickle.load(open(AI_PATH+'/trained_AI/clfl2_HTRU.pkl','rb'))
-#    #classifier = cPickle.load(open('../clfl2_PALFA_1.pkl','rb'))
-#    classifier = cPickle.load(open(AI_PATH+'/trained_AI/clfl2_PALFA.pkl','rb'))
-#    #classifier = cPickle.load(open(AI_PATH+'/trained_AI/clfl2_BD.pkl','rb'))
-#    #classifier = cPickle.load(open(AI_PATH+'/trained_AI/clfl2_ResNet.pkl','rb'))
-#    tmp = []; 
-#    tmp.append(pfdFile) 
-#    AI_scores = classifier.report_score([pfdreader(f) for f in tmp])
-#    
-#    text = '\n'.join(['%s %s' % (tmp[i], AI_scores[i]) for i in range(len(tmp))])
-#    return text
-def def confirmCandidate(pfdFile):
+def confirmCandidate(pfdFile):
+    AI_PATH = '/'.join(ubc_AI.__file__.split('/')[:-1])
+    #classifier = cPickle.load(open(AI_PATH+'/trained_AI/clfl2_HTRU.pkl','rb'))
+    #classifier = cPickle.load(open('../clfl2_PALFA_1.pkl','rb'))
+    classifier = cPickle.load(open(AI_PATH+'/trained_AI/clfl2_PALFA.pkl','rb'))
+    #classifier = cPickle.load(open(AI_PATH+'/trained_AI/clfl2_BD.pkl','rb'))
+    #classifier = cPickle.load(open(AI_PATH+'/trained_AI/clfl2_ResNet.pkl','rb'))
+    tmp = []; 
+    tmp.append(pfdFile) 
+    AI_scores = classifier.report_score([pfdreader(f) for f in tmp])
+    
+    text = '\n'.join(['%s %s' % (tmp[i], AI_scores[i]) for i in range(len(tmp))])
+    return text
+
+
+#def confirmCandidate(pfdFile,foldResult):
+#    os.chdir(foldResult)
+#    filename = "ubc_AIScore.txt" 
+#    f = open(filename, 'r')
+#    result = f.readlines()
+#    result = result.split()
 
 
 #----------------------------------------------
@@ -89,6 +98,7 @@ def setworkpath(simpath):
 #cut and fold the file
 
 def foldfile(filename, simdataPath, foldpath, dm, period):
+    os.chdir(foldpath)
     cutfilename = filename[:-5]+'_cut'+filename[-5:]
     #cut file 
     #----------------------------------------------
@@ -108,21 +118,21 @@ def foldfile(filename, simdataPath, foldpath, dm, period):
         output = getoutput(cutfile)
     #rfifind
     maskfilename = filename[:-5]
-    rfifind = str('rfifind %s/%s -o %s -time 1' %(foldpath, cutfilename, maskfilename))
+    rfifind = str('rfifind %s/%s -o %s/%s -time 1' %(foldpath, cutfilename, foldpath, maskfilename))
     print rfifind
     output = getoutput(rfifind)
 
     #fold file
-    foldfile = str('prepfold -noxwin -nosearch -p %s -dm %s -mask %s/%s %s/%s' %(period, dm, foldpath, maskfilename+'_rfifind.mask', foldpath, cutfilename))
+    #foldfile = str('prepfold -noxwin -nosearch -p %s -dm %s -mask %s/%s %s/%s' %(period, dm, foldpath, maskfilename+'_rfifind.mask', foldpath, cutfilename))
+    foldfile = str('prepfold -noxwin -nosearch -p %s -dm %s -o %s -mask %s/%s %s/%s' %(period, dm, cutfilename[:-5], foldpath, maskfilename+'_rfifind.mask', foldpath, cutfilename))
     print foldfile
     output = getoutput(foldfile)
 
     #find pfdfile
-    pfdfilename = glob.glob('%s/%s*.pfd' %(foldpath, maskfilename))
+    #pfdfilename = glob.glob('%s/%s*.pfd' %(foldpath, maskfilename))
+    pfdfilename = glob.glob('%s/%s*.pfd' %(foldpath, cutfilename[:-5]))
 
     return pfdfilename
-
-
 
 
 #----------------------------------------------
@@ -136,9 +146,12 @@ if __name__ == "__main__":
     #----------------------------------------------
     #db file: simPipe.db
     np.set_printoptions(precision=5)
-    maxDM = 3000; minDM = 10; maxPeriod = 10; minPeriod = 0.001; maximumFlux = 1; minimumFlux = 0.0001
-    logDM = np.random.uniform(np.log10(minDM), np.log10(maxDM), 2) 
-    logPeriod =  np.random.uniform(np.log10(minPeriod), np.log10(maxPeriod), 2)
+    maxDM = 3000; minDM = 10; maxPeriod = 10; minPeriod = 0.001; maximumFlux = 5; minimumFlux = 0.0001
+    logDM = np.random.uniform(np.log10(minDM), np.log10(maxDM), 20) 
+    logPeriod =  np.random.uniform(np.log10(minPeriod), np.log10(maxPeriod), 20)
+
+    #logPeriod = [np.log10(0.7658)]
+    #logDM= [np.log10(100)]
 
     
     #----------------------------------------------
@@ -166,79 +179,102 @@ if __name__ == "__main__":
     randomNum=np.random.uniform(-1,1,len(logDM)*len(logPeriod))
     detection = 0
     count = 0
-    detectScore = 0.9
+    detectScore = 0.7
 
     #----------------------------------------------
     # check taskin from database
-    taskid = 11
+    taskid = 13
 
     for dm in logDM:
         for period in logPeriod:
             maxFlux = maximumFlux
             minFlux = minimumFlux
             meanFlux = (maxFlux+minFlux)/2.
-            while maxFlux/minFlux > 5:
+            while (maxFlux/minFlux > 5):
+                print "================running(1/4)================"
                 print fastFile[count]
                 #get filename
-                psrfitsName_max  =  simulate(round(10**dm,5), round(maxFlux,5), round(10**period,5), fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
-                psrfitsName_min  =  simulate(round(10**dm,5), round(minFlux,5), round(10**period,5), fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
-                psrfitsName_mean =  simulate(round(10**dm,5), round(meanFlux,5), round(10**period,5), fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
+                psrfitsName_max, width_max  =  simulate(round(10**dm,5), round(maxFlux,5), round(10**period,5), fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
+                psrfitsName_min, width_min =  simulate(round(10**dm,5), round(minFlux,5), round(10**period,5), fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
+                psrfitsName_mean, width_mean  =  simulate(round(10**dm,5), round(meanFlux,5), round(10**period,5), fastFile[count], randomNum[count], fitsFilePath, simBinarydataPath, simdataPath)
 
-
+                print "================running(2/4)================"
                 #fold file
-                pfdFile_max  = foldfile(psrfitsName_max , simdataPath, foldResult, dm, period)
-                pfdFile_min  = foldfile(psrfitsName_min , simdataPath, foldResult, dm, period)
-                pfdFile_mean = foldfile(psrfitsName_mean, simdataPath, foldResult, dm, period)
+                pfdFile_max  = foldfile(psrfitsName_max , simdataPath, foldResult, round(10**dm,5), round(10**period,5))
+                pfdFile_min  = foldfile(psrfitsName_min , simdataPath, foldResult, round(10**dm,5), round(10**period,5))
+                pfdFile_mean = foldfile(psrfitsName_mean, simdataPath, foldResult, round(10**dm,5), round(10**period,5))
 
+
+                print "================running(3/4)================"
                 #AI select
-                maxFluxScore = confirmCandidate(pfdFile_max)
-                minFluxScore = confirmCandidate(pfdFile_min)
-                meanFluxScore = confirmCandidate(pfdFile_mean)
+                #maxFluxScore  = confirmCandidate(pfdFile_max, foldResult)
+                #minFluxScore  = confirmCandidate(pfdFile_min, foldResult)
+                #meanFluxScore = confirmCandidate(pfdFile_mean, foldResult)
+                maxFluxScore  = float(confirmCandidate(pfdFile_max[0]).split()[1])
+                minFluxScore  = float(confirmCandidate(pfdFile_min[0]).split()[1])
+                meanFluxScore = float(confirmCandidate(pfdFile_mean[0]).split()[1])
+                print maxFluxScore, minFluxScore, meanFluxScore
 
 
+                print "================running(4/4)================"
                 #check source order
-                if (minFluxScore < meanFluxScore & meanFluxScore < maxFluxScore):
+                if (minFluxScore < meanFluxScore and meanFluxScore < maxFluxScore):
+
+                    print "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+                    print psrfitsName_max,round(10**dm,5), round(10**period,5), width_max, maxFlux, maxFluxScore, taskid
+                    print psrfitsName_min,round(10**dm,5), round(10**period,5), width_min, minFlux, minFluxScore, taskid
+                    print psrfitsName_mean,round(10**dm,5), round(10**period,5), width_mean, meanFlux, meanFluxScore, taskid
+
+                    print "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+
                     #record the result to the database
                     #----------------------------------------------
-                    conn = sqlite3.connect('simPipe.db')
-                    writedatabase(conn, psrfitsName_max, DM, Period, width, maxFlux, maxFluxScore, taskid)
-                    writedatabase(conn, psrfitsName_min, DM, Period, width, minFlux, minFluxScore, taskid)
-                    writedatabase(conn, psrfitsName_mean, DM, Period, width, meanFlux, meanFluxScore, taskid)
+                    conn = sqlite3.connect('/public/home/mcc/work/test-simPipe/simPipe.db')
+                    writedatabase( conn, psrfitsName_max,round(10**dm,5), round(10**period,5), width_max, maxFlux, maxFluxScore, taskid)
+                    writedatabase( conn, psrfitsName_min,round(10**dm,5), round(10**period,5), width_min, minFlux, minFluxScore, taskid)
+                    writedatabase(conn, psrfitsName_mean,round(10**dm,5), round(10**period,5), width_mean, meanFlux, meanFluxScore, taskid)
                     #cursor = conn.execute("SELECT * from simFiles")
                     #for row in cursor:
                     #    print row
                     conn.close()
-                elif (minFluxScore > meanFluxScore):
-                    continue
-                elif (meanFluxScore > maxFluxScore):
-                    continue
                 else : 
+                    print "================running================"
                     print "minFluxScore, meanFluxScore, maxFluxScore",minFluxScore, meanFluxScore, maxFluxScore
 
 
                 #minFluxScore > detectScore
-                if minFluxScore > detectScore :
+                if (minFluxScore > detectScore) :
+                    print "================(1/4)================"
                     maxFlux = minFlux
                     minFlux = minimumFlux
                     meanFlux = (maxFlux+minFlux)/2.
+                    print maxFlux, meanFlux, minFlux
 
                 #minFluxScore < detectScore
                 else: 
                     #meanFluxScore > detectScore
-                    if meanFluxScore > detectScore:
+                    if (meanFluxScore > detectScore):
+                        print "================(2/4)================"
                         maxFlux = meanFlux
                         meanFlux = (maxFlux+minFlux)/2.
+                        print maxFlux, meanFlux, minFlux
                     #meanFluxScore < detectScore
                     else: 
                         #maxFluxScore > detectScore
-                        if maxFluxScore > detectScore:
+                        if (maxFluxScore > detectScore):
+                            print "================(3/4)================"
                             minFlux = meanFlux
                             meanFlux = (maxFlux+minFlux)/2.
+                            print maxFlux, meanFlux, minFlux
                         #maxFluxScore < detectScore
                         else:
+                            print "================(4/4)================"
                             maxFlux = maximumFlux
                             minFlux = maxFlux
                             meanFlux = (maxFlux+minFlux)/2.
+                            print maxFlux, meanFlux, minFlux
                         
             #----------------------------------------------
             count += 1

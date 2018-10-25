@@ -15,6 +15,7 @@ print pfdfile
 AI_scores = classifier.report_score([pfdreader(f) for f in pfdfile])
 
 text = '\n'.join(['%s %s' % (pfdfile[i], AI_scores[i]) for i in range(len(pfdfile))])
+print text, type(text)
 fout = open('testResult.txt', 'w')
 fout.write(text)
 fout.close()
