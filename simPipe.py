@@ -6,10 +6,11 @@
 #use a database to record the progress
 #module take care of the module that ubc_AI needed
 
-import math, sqlite3, optimus
 import time
-import cPickle, glob, ubc_AI, os
+import ymal
 import numpy as np
+import math, sqlite3, optimus
+import cPickle, glob, ubc_AI, os, sys
 from commands import getoutput
 from ubc_AI.data import pfdreader
 
@@ -138,6 +139,7 @@ def foldfile(filename, simdataPath, foldpath, dm, period):
 #----------------------------------------------
 if __name__ == "__main__":
 
+
     #----------------------------------------------
     #set parameters
     #DM range: 10 - 3000 cm-3/pc
@@ -146,20 +148,45 @@ if __name__ == "__main__":
     #----------------------------------------------
     #db file: simPipe.db
     np.set_printoptions(precision=5)
-    maxDM = 3000; minDM = 10; maxPeriod = 10; minPeriod = 0.001; maximumFlux = 5; minimumFlux = 0.0001
-    logDM = np.random.uniform(np.log10(minDM), np.log10(maxDM), 20) 
-    logPeriod =  np.random.uniform(np.log10(minPeriod), np.log10(maxPeriod), 20)
+    inputFilename = sys.argv[1:]
+
+    for filename in inputFilename:
+        with open(filename, 'r') as f:
+            cont = f.read()
+            print cont
+            x = yaml.load(cont)
+        print "open file: ",filename,", reading settings."
+        for i in x:
+            print i
+            print x[i]
+
+
+    maxmunFlux = x['maxFlux']
+    minimumFlux = x['minFlux']
+    logDM = [np.log10(i) for i in x['dm']]
+    logPeriod = [np.log10(i) for i in x['period']]
+    taskid = x['taskid']
+
+
+    #----------------------------------------------
+    #maxDM = 3000; minDM = 10; maxPeriod = 10; minPeriod = 0.001; maximumFlux = 5; minimumFlux = 0.0001
+    #logDM = np.random.uniform(np.log10(minDM), np.log10(maxDM), 20) 
+    #logPeriod =  np.random.uniform(np.log10(minPeriod), np.log10(maxPeriod), 20)
 
     #logPeriod = [np.log10(0.7658)]
     #logDM= [np.log10(100)]
 
-    
-    #----------------------------------------------
-    #setworkpath
-    simpath = os.getcwd()
-    fastFile, fitsFilePath, simBinarydataPath, simdataPath, foldResult = setworkpath(simpath)
-    print "path now: ", simpath
 
+    #----------------------------------------------
+    # other paramters
+    meanFreq = 500
+    randomNum=np.random.uniform(-1,1,len(logDM)*len(logPeriod))
+    detection = 0
+    count = 0
+    detectScore = 0.7
+    databasePath = "/public/home/mcc/work/test-simPipe/simPipe.db"
+
+    
     #----------------------------------------------
     #record random params
     f = open('randomParams.txt','a')
@@ -173,17 +200,13 @@ if __name__ == "__main__":
     f.writelines("\n")
     f.close()
 
-    #----------------------------------------------
-    # other paramters
-    meanFreq = 500
-    randomNum=np.random.uniform(-1,1,len(logDM)*len(logPeriod))
-    detection = 0
-    count = 0
-    detectScore = 0.7
 
     #----------------------------------------------
-    # check taskin from database
-    taskid = 13
+    #setworkpath
+    simpath = os.getcwd()
+    fastFile, fitsFilePath, simBinarydataPath, simdataPath, foldResult = setworkpath(simpath)
+    print "path now: ", simpath
+
 
     for dm in logDM:
         for period in logPeriod:
@@ -231,7 +254,7 @@ if __name__ == "__main__":
 
                     #record the result to the database
                     #----------------------------------------------
-                    conn = sqlite3.connect('/public/home/mcc/work/test-simPipe/simPipe.db')
+                    conn = sqlite3.connect(databasePath)
                     writedatabase( conn, psrfitsName_max,round(10**dm,5), round(10**period,5), width_max, maxFlux, maxFluxScore, taskid)
                     writedatabase( conn, psrfitsName_min,round(10**dm,5), round(10**period,5), width_min, minFlux, minFluxScore, taskid)
                     writedatabase(conn, psrfitsName_mean,round(10**dm,5), round(10**period,5), width_mean, meanFlux, meanFluxScore, taskid)
