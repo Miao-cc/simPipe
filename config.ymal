@@ -1,0 +1,18 @@
+dm:
+    [10., 20., 30., 40.]
+
+period:
+    [1., 2., 3., 4.]
+
+maxFlux:
+    5
+
+minFlux:
+    0.1
+
+detectScore:
+    0.7
+
+taskid:
+    15
+
