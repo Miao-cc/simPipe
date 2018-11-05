@@ -7,7 +7,7 @@
 #module take care of the module that ubc_AI needed
 
 import time
-import ymal
+import yaml
 import numpy as np
 import math, sqlite3, optimus
 import cPickle, glob, ubc_AI, os, sys
@@ -153,7 +153,6 @@ if __name__ == "__main__":
     for filename in inputFilename:
         with open(filename, 'r') as f:
             cont = f.read()
-            print cont
             x = yaml.load(cont)
         print "open file: ",filename,", reading settings."
         for i in x:
@@ -161,11 +160,12 @@ if __name__ == "__main__":
             print x[i]
 
 
-    maxmunFlux = x['maxFlux']
+    maximumFlux = x['maxFlux']
     minimumFlux = x['minFlux']
     logDM = [np.log10(i) for i in x['dm']]
     logPeriod = [np.log10(i) for i in x['period']]
     taskid = x['taskid']
+    detectScore = x['detectScore']
 
 
     #----------------------------------------------
@@ -183,7 +183,6 @@ if __name__ == "__main__":
     randomNum=np.random.uniform(-1,1,len(logDM)*len(logPeriod))
     detection = 0
     count = 0
-    detectScore = 0.7
     databasePath = "/public/home/mcc/work/test-simPipe/simPipe.db"
 
     
