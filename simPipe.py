@@ -1,7 +1,9 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
+
 #For create simulate files auto
 #For parameter dm, flux, period
+
 #Width is always too big. Input will be smaller than 3-5 times
 #use a database to record the progress
 #module take care of the module that ubc_AI needed
@@ -9,6 +11,7 @@
 import time
 import yaml
 import numpy as np
+import rfifind as prestoRFIfind
 import math, sqlite3, optimus
 import cPickle, glob, ubc_AI, os, sys
 from commands import getoutput
@@ -123,9 +126,20 @@ def foldfile(filename, simdataPath, foldpath, dm, period):
     print rfifind
     output = getoutput(rfifind)
 
+    maskFile = prestoRFIfind.rfifind(maskfilename+'.mask')
+    Intervals = maskFile.nchan * maskFile.nint * 1.
+    badIntervals = 0.
+    for i in maskFile.mask_zap_chans_per_int:
+        badIntervals = len(i) + badIntervals
+
     #fold file
+    #if badIntervals more than 50% of Intervals: fold without maskFile
+    #if badIntervals less than 50% of Intervals: fold with maskFile
     #foldfile = str('prepfold -noxwin -nosearch -p %s -dm %s -mask %s/%s %s/%s' %(period, dm, foldpath, maskfilename+'_rfifind.mask', foldpath, cutfilename))
-    foldfile = str('prepfold -noxwin -nosearch -p %s -dm %s -o %s -mask %s/%s %s/%s' %(period, dm, cutfilename[:-5], foldpath, maskfilename+'_rfifind.mask', foldpath, cutfilename))
+    if ((badIntervals / Intervals) > 0.5):
+        foldfile = str('prepfold -noxwin -nosearch -p %s -dm %s -o %s  %s/%s' %(period, dm, cutfilename[:-5], foldpath, cutfilename))
+    else:
+        foldfile = str('prepfold -noxwin -nosearch -p %s -dm %s -o %s -mask %s/%s %s/%s' %(period, dm, cutfilename[:-5], foldpath, maskfilename+'_rfifind.mask', foldpath, cutfilename))
     print foldfile
     output = getoutput(foldfile)
 
