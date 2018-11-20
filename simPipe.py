@@ -10,10 +10,6 @@
 
 import time
 import yaml
-<<<<<<< HEAD
-=======
-import rfifind
->>>>>>> b39705870bd1a20f8272d82ac10abe71a3b727e7
 import numpy as np
 import rfifind as prestoRFIfind
 import math, sqlite3, optimus
@@ -129,8 +125,8 @@ def foldfile(filename, simdataPath, foldpath, dm, period):
     print rfifind
     output = getoutput(rfifind)
 
-<<<<<<< HEAD
-    maskFile = prestoRFIfind.rfifind(maskfilename+'.mask')
+    #get number of bad intervals
+    maskFile = prestoRFIfind.rfifind(glob.glob('%s/%s*.mark' %(foldpath, cutfilename[:-5])))
     Intervals = maskFile.nchan * maskFile.nint * 1.
     badIntervals = 0.
     for i in maskFile.mask_zap_chans_per_int:
@@ -141,28 +137,12 @@ def foldfile(filename, simdataPath, foldpath, dm, period):
     #if badIntervals less than 50% of Intervals: fold with maskFile
     #foldfile = str('prepfold -noxwin -nosearch -p %s -dm %s -mask %s/%s %s/%s' %(period, dm, foldpath, maskfilename+'_rfifind.mask', foldpath, cutfilename))
     if ((badIntervals / Intervals) > 0.5):
-        foldfile = str('prepfold -noxwin -nosearch -p %s -dm %s -o %s  %s/%s' %(period, dm, cutfilename[:-5], foldpath, cutfilename))
+        foldfile = str('prepfold -noxwin -nosearch -p %s -dm %s -o %s %s/%s' %(period, dm, cutfilename[:-5], foldpath, cutfilename))
     else:
         foldfile = str('prepfold -noxwin -nosearch -p %s -dm %s -o %s -mask %s/%s %s/%s' %(period, dm, cutfilename[:-5], foldpath, maskfilename+'_rfifind.mask', foldpath, cutfilename))
+
     print foldfile
     output = getoutput(foldfile)
-=======
-    maskfilename = glob.glob('%s/%s*.mark' %(foldpath, cutfilename[:-5]))
-    x = rfifind.rfifind(maskfilename)
-    # while bad inverband more than 50%, no use mask file; else use mask file
-    if (((len(x.mask_zap_chans)+len(x.get_avg_zap_chans())) / (1. * x.nchan)) > 0.5):
-        #fold file
-        #foldfile = str('prepfold -noxwin -nosearch -p %s -dm %s -mask %s/%s %s/%s' %(period, dm, foldpath, maskfilename+'_rfifind.mask', foldpath, cutfilename))
-        foldfile = str('prepfold -noxwin -nosearch -p %s -dm %s -o %s %s/%s' %(period, dm, cutfilename[:-5], foldpath, cutfilename))
-        print foldfile
-        output = getoutput(foldfile)
-    else:
-        #fold file
-        #foldfile = str('prepfold -noxwin -nosearch -p %s -dm %s -mask %s/%s %s/%s' %(period, dm, foldpath, maskfilename+'_rfifind.mask', foldpath, cutfilename))
-        foldfile = str('prepfold -noxwin -nosearch -p %s -dm %s -o %s -mask %s/%s %s/%s' %(period, dm, cutfilename[:-5], foldpath, maskfilename+'_rfifind.mask', foldpath, cutfilename))
-        print foldfile
-        output = getoutput(foldfile)
->>>>>>> b39705870bd1a20f8272d82ac10abe71a3b727e7
 
     #find pfdfile
     #pfdfilename = glob.glob('%s/%s*.pfd' %(foldpath, maskfilename))
