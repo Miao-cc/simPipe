@@ -126,7 +126,7 @@ def foldfile(filename, simdataPath, foldpath, dm, period):
     output = getoutput(rfifind)
 
     #get number of bad intervals
-    maskFile = prestoRFIfind.rfifind(glob.glob('%s/%s*.mark' %(foldpath, cutfilename[:-5])))
+    maskFile = prestoRFIfind.rfifind(glob.glob('%s/%s*.mask' %(foldpath, maskfilename))[0])
     Intervals = maskFile.nchan * maskFile.nint * 1.
     badIntervals = 0.
     for i in maskFile.mask_zap_chans_per_int:
@@ -181,6 +181,7 @@ if __name__ == "__main__":
     logPeriod = [np.log10(i) for i in x['period']]
     taskid = x['taskid']
     detectScore = x['detectScore']
+    databasePath = x['detectScore']
 
 
     #----------------------------------------------
@@ -198,7 +199,6 @@ if __name__ == "__main__":
     randomNum=np.random.uniform(-1,1,len(logDM)*len(logPeriod))
     detection = 0
     count = 0
-    databasePath = "/public/home/mcc/work/test-simPipe/simPipe.db"
 
     
     #----------------------------------------------

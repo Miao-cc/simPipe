@@ -16,3 +16,5 @@ detectScore:
 taskid:
     16
 
+databasePath:
+    /public/home/mcc/work/test-simPipe/Parallel-test/simPipe1Parallel1/simPipe.db
