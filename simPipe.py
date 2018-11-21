@@ -181,7 +181,7 @@ if __name__ == "__main__":
     logPeriod = [np.log10(i) for i in x['period']]
     taskid = x['taskid']
     detectScore = x['detectScore']
-    databasePath = x['detectScore']
+    databasePath = x['databasePath']
 
 
     #----------------------------------------------
